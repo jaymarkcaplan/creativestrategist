@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jay Mark Caplan — Creative Strategist</title>
+<meta name="description" content="Jay Mark Caplan is a creative strategist helping brands make work that moves people.">
+<meta property="og:title" content="Jay Mark Caplan — Creative Strategist">
+<meta property="og:description" content="Fast, prolific creative partner for brands that need ideas that move people.">
+<meta property="og:url" content="https://jaymarkcaplan.com">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Neuton:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+
+/* ── TOKENS ── */
+:root {
+  --bg:        #f6f5f2;
+  --ink:       #111110;
+  --ink-mid:   #555550;
+  --ink-light: #999990;
+  --red:       #C8102E;
+  --rule:      rgba(0,0,0,0.09);
+  --display:   'Pirata One', serif;
+  --body:      'Neuton', Georgia, serif;
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #f6f5f2;
+  color: #111110;
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  padding-top: 56px;
+}
+
+a { color: inherit; text-decoration: none; }
+img { display: block; width: 100%; }
+
+/* ── HEADER NAV ── */
+#site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 500;
+  background-color: #f6f5f2;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+#site-nav.scrolled {
+  border-bottom-color: rgba(0,0,0,0.09);
+}
+
+#site-nav.menu-open {
+  border-bottom-color: transparent;
+}
+
+.nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  height: 56px;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-name {
+  font-family: 'Pirata One', serif;
+  font-size: 40px;
+  color: #111110;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+#menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 60px;
+  font-weight: 300;
+  color: #C8102E;
+  line-height: 1;
+  padding: 6px 6px;
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+#menu-btn.open { transform: rotate(45deg); }
+
+/* ── DROPDOWN ── */
+#site-dropdown {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  z-index: 490;
+  background-color: #f6f5f2;
+  border-bottom: 1px solid rgba(0,0,0,0.09);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.5s cubic-bezier(0.22,1,0.36,1);
+}
+#site-dropdown.open { max-height: 860px; }
+
+.dd-grid {
+  display: grid;
+  grid-template-columns: 160px 1.4fr 1fr 1fr;
+  gap: 52px;
+  padding: 48px 40px 52px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.dd-photo {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background-color: #dddad4;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dd-photo img { width: 100%; height: 100%; object-fit: cover; }
+.dd-photo-label {
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #999990;
+}
+
+.dd-col h4 {
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #999990;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.09);
+}
+
+.dd-col p {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: #555550;
+}
+
+.dd-col ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.dd-col ul li {
+  font-size: 15px;
+  font-weight: 300;
+  color: #555550;
+  line-height: 1.4;
+  padding-left: 18px;
+  position: relative;
+}
+.dd-col ul li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: #999990;
+  font-size: 11px;
+}
+
+.dd-col .dd-section + .dd-section { margin-top: 28px; }
+
+.dd-links {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dd-links a {
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #555550;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: color 0.2s ease;
+}
+.dd-links a:hover { color: #111110; }
+.dd-links a::after {
+  content: '↗';
+  font-size: 10px;
+  color: #999990;
+}
+
+/* ── HERO ── */
+#hero {
+  width: 100%;
+  background-color: #eceae5;
+  position: relative;
+}
+
+.hero-ratio {
+  position: relative;
+  width: 100%;
+  padding-top: 52%;
+  background-color: #eceae5;
+}
+
+.hero-ratio iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.hero-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background-color: #eceae5;
+}
+.hero-placeholder .hp-name {
+  font-family: 'Pirata One', serif;
+  font-size: clamp(26px, 5vw, 54px);
+  color: rgba(17,17,16,0.10);
+  letter-spacing: 0.06em;
+}
+.hero-placeholder .hp-label {
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #999990;
+}
+
+/* ── WORK SECTION ── */
+#work {
+  background-color: #f6f5f2;
+  padding: 68px 40px 96px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.work-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 44px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.09);
+}
+
+.section-label {
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: #999990;
+}
+
+/* ── GRID ── */
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.row-full { display: grid; grid-template-columns: 1fr; }
+.row-half { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+
+.tile {
+  position: relative;
+  background-color: #e2dfd9;
+  overflow: hidden;
+  cursor: pointer;
+  display: block;
+  margin-bottom: 32px;
+}
+
+.row-full  .tile { aspect-ratio: 16 / 9; }
+.row-half  .tile { aspect-ratio: 16 / 9; }
+
+.tile-bg {
+  position: absolute;
+  inset: 0;
+  background-color: #dddad4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tile-bg span {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #999990;
+}
+
+.tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.22,1,0.36,1);
+}
+.tile:hover img { transform: scale(1.025); }
+
+.tile-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(17,17,16,0);
+  transition: background-color 0.35s ease;
+  display: flex;
+  align-items: flex-end;
+  padding: 26px;
+  pointer-events: none;
+}
+.tile:hover .tile-overlay { background-color: rgba(17,17,16,0.40); }
+
+.tile-info {
+  opacity: 0;
+  transform: translateY(7px);
+  transition: opacity 0.3s ease, transform 0.35s ease;
+}
+.tile:hover .tile-info { opacity: 1; transform: translateY(0); }
+
+.tile-title {
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #ffffff;
+  line-height: 1.2;
+}
+.tile-cat {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.58);
+  margin-top: 5px;
+}
+
+/* Below-tile label */
+.tile-label {
+  padding: 16px 0 22px;
+  border-bottom: 1px solid rgba(0,0,0,0.09);
+  background-color: #f6f5f2;
+}
+.tile-label-title {
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #111110;
+  line-height: 1.2;
+}
+.tile-label-cat {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #999990;
+  margin-top: 5px;
+}
+
+/* ── FOOTER ── */
+#site-footer {
+  background-color: #f6f5f2;
+  border-top: 1px solid rgba(0,0,0,0.09);
+  padding: 36px 40px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.footer-copy {
+  font-size: 30px;
+  font-weight: 300;
+  font-style: italic;
+  color: #999990;
+}
+
+.footer-contact {
+  display: flex;
+  gap: 28px;
+}
+.footer-contact a {
+  font-family: 'Neuton', Georgia, serif;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #555550;
+  transition: color 0.2s ease;
+}
+.footer-contact a:hover { color: #111110; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .nav-inner { padding: 0 20px; }
+
+  .dd-grid {
+    grid-template-columns: 120px 1fr;
+    gap: 24px;
+    padding: 36px 20px 44px;
+  }
+
+  .dd-grid .dd-col:nth-child(3),
+  .dd-grid .dd-col:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
+  #work { padding: 52px 20px 72px; }
+
+  .row-half { grid-template-columns: 1fr; }
+  .row-full  .tile { aspect-ratio: 16 / 7; }
+  .row-half  .tile { aspect-ratio: 4 / 3; }
+
+  #site-footer { padding: 28px 20px 40px; }
+  .footer-contact { gap: 18px; }
+}
+
+@media (max-width: 480px) {
+  .dd-grid {
+    grid-template-columns: 100px 1fr;
+    gap: 20px;
+    padding: 28px 20px 36px;
+  }
+  .dd-grid .dd-col:nth-child(3),
+  .dd-grid .dd-col:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+  .footer-contact { gap: 14px; }
+  .footer-contact a { letter-spacing: 0.2em; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ════ HEADER NAV ════ -->
+<nav id="site-nav">
+  <div class="nav-inner">
+    <span class="nav-name">Jay Mark Caplan</span>
+    <button id="menu-btn" aria-label="Open menu" aria-expanded="false">+</button>
+  </div>
+</nav>
+
+<!-- ════ DROPDOWN ════ -->
+<div id="site-dropdown" aria-hidden="true">
+  <div class="dd-grid">
+
+    <!-- Photo -->
+    <div class="dd-photo">
+      <span class="dd-photo-label">Photo</span>
+    </div>
+
+    <!-- About -->
+    <div class="dd-col">
+      <h4>About</h4>
+      <p>
+        I’ve spent my career at the intersection of strategy, creative, and production. I deliver smart, exciting work for clients who need to move people and catalyze change.</p>
+    </div>
+
+    <!-- Clients + Services -->
+    <div class="dd-col">
+      <div class="dd-section">
+        <h4>Select Clients</h4>
+        <ul>
+          <li>Coca-Cola</li>
+          <li>LEGO</li>
+          <li>Mercedes-Benz</li>
+          <li>Bristol-Myers Squibb</li>
+          <li>Fido</li>
+        </ul>
+      </div>
+      <div class="dd-section">
+        <h4>Services</h4>
+        <ul>
+          <li>Creative Strategy</li>
+          <li>Communications Planning</li>
+          <li>Pitch &amp; Treatment Writing</li>
+          <li>Copywriting</li>
+          <li>Video Editing &amp; Production</li>
+          <li>Graphic &amp; Web Design</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="dd-col">
+      <h4>Contact</h4>
+      <div class="dd-links">
+        <a href="mailto:jaymarkcaplan@gmail.com">Email</a>
+        <a href="https://www.linkedin.com/in/jaymarkcaplan" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://www.instagram.com/jaymarkcomics" target="_blank" rel="noopener">Instagram</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ HERO VIDEO ════ -->
+<section id="hero">
+  <div class="hero-ratio">
+
+<div class="hero-ratio">
+  <iframe
+    src="https://player.vimeo.com/video/1183818346?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0"
+    style="position:absolute; inset:0; width:100%; height:100%; border:none;"
+    allow="autoplay; fullscreen; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+</div>
+
+  </div>
+</section>
+
+<!-- ════ WORK GRID ════ -->
+<section id="work">
+
+  <div class="grid">
+
+    <!-- 1 — Full -->
+    <div class="row-full">
+      <div>
+        <div class="tile">
+          <div class="tile-bg" style="padding:0; overflow:hidden;">
+  <iframe
+    src="https://player.vimeo.com/video/1176580042"
+    style="position:absolute; inset:0; width:100%; height:100%; border:none;"
+    allow="autoplay; fullscreen; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+</div>
+          <div class="tile-overlay"><div class="tile-info">
+
+          </div></div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- 2 — Half -->
+    <div class="row-half">
+      <div>
+        <div class="tile">
+         <div class="tile-bg" style="padding:0; overflow:hidden;">
+  <iframe
+    src="https://player.vimeo.com/video/1172278625"
+    style="position:absolute; inset:0; width:100%; height:100%; border:none;"
+    allow="autoplay; fullscreen; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+</div>
+          <div class="tile-overlay"><div class="tile-info">
+          </div></div>
+        </div>
+       
+      </div>
+      <div>
+        <div class="tile">
+          <<div class="tile-bg" style="padding:0; overflow:hidden;">
+  <iframe
+    src="https://player.vimeo.com/video/1172281913"
+    style="position:absolute; inset:0; width:100%; height:100%; border:none;"
+    allow="autoplay; fullscreen; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+</div>
+          <div class="tile-overlay"><div class="tile-info">
+
+          </div></div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- 3 — Full -->
+    <div class="row-full">
+      <div>
+        <div class="tile">
+<div class="tile-bg" style="padding:0; overflow:hidden;">
+  <iframe
+    src="https://player.vimeo.com/video/1183825459"
+    style="position:absolute; inset:0; width:100%; height:100%; border:none;"
+    allow="autoplay; fullscreen; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+</div>          <div class="tile-overlay"><div class="tile-info">
+
+          </div></div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- 4 — Half -->
+    <div class="row-half">
+      <div>
+        <div class="tile">
+<div class="tile-bg" style="padding:0; overflow:hidden;">
+  <iframe
+    src="https://player.vimeo.com/video/1183818346"
+    style="position:absolute; inset:0; width:100%; height:100%; border:none;"
+    allow="autoplay; fullscreen; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+</div>          <div class="tile-overlay"><div class="tile-info">
+
+          </div></div>
+        </div>
+        
+      </div>
+      <div>
+        <div class="tile">
+          <div class="tile-bg"><span>Image / Video</span></div>
+          <div class="tile-overlay"><div class="tile-info">
+            <div class="tile-title">Project Title Six</div>
+            <div class="tile-cat">Production · Film</div>
+          </div></div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- 5 — Full -->
+    <div class="row-full">
+      <div>
+        <div class="tile">
+          <div class="tile-bg"><span>Image / Video</span></div>
+          <div class="tile-overlay"><div class="tile-info">
+            <div class="tile-title">Project Title Seven</div>
+            <div class="tile-cat">Campaign · Strategy</div>
+          </div></div>
+        </div>
+        
+        </div>
+      </div>
+    </div>
+
+
+
+  </div>
+</section>
+
+<!-- ════ FOOTER ════ -->
+<footer id="site-footer">
+  <p class="footer-copy">Creative strategy, campaign development, and production — New York.</p>
+  <div class="footer-contact">
+    <a href="mailto:jaymarkcaplan@gmail.com">Email</a>
+    <a href="https://www.linkedin.com/in/jaymarkcaplan" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="https://www.instagram.com/jaymarkcomics" target="_blank" rel="noopener">Instagram</a>
+  </div>
+</footer>
+
+<!-- ════ JS ════ -->
+<script>
+(function () {
+  var btn      = document.getElementById('menu-btn');
+  var drop     = document.getElementById('site-dropdown');
+  var nav      = document.getElementById('site-nav');
+
+  // Scroll → frosted nav
+  window.addEventListener('scroll', function () {
+    if (window.scrollY > 8) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Toggle menu
+  btn.addEventListener('click', function () {
+    var isOpen = drop.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    nav.classList.toggle('menu-open', isOpen);
+    btn.setAttribute('aria-expanded', String(isOpen));
+    drop.setAttribute('aria-hidden', String(!isOpen));
+  });
+
+  // Close on outside click
+  document.addEventListener('click', function (e) {
+    if (!nav.contains(e.target) && !drop.contains(e.target)) {
+      drop.classList.remove('open');
+      btn.classList.remove('open');
+      nav.classList.remove('menu-open');
+      btn.setAttribute('aria-expanded', 'false');
+      drop.setAttribute('aria-hidden', 'true');
+    }
+  });
+}());
+</script>
+
+</body>
+</html>
