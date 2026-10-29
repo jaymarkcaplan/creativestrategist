@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inkwell – line art vectorizer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{--bg:#f5f2eb;--panel:#fff;--ink:#1b1b1b;--mute:#6b665d;--line:#e2ddd2;--acc:#e5342a;--accfg:#fff;--stage:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+.app{display:grid;grid-template-columns:1fr 340px;height:100vh;gap:18px;padding:18px}
+@media (max-width:820px){.app{grid-template-columns:1fr;height:auto}.stagewrap{height:60vh}}
+.stagewrap{display:flex;flex-direction:column;min-height:0;background:var(--panel);border:0;border-radius:0;overflow:hidden}
+.bar{display:flex;gap:10px;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.bar h1{font-size:22px;font-weight:800;margin:0 auto 0 0;letter-spacing:-.01em}.bar h1::after{content:"+";color:var(--acc);margin-left:10px;font-weight:600}
+.seg{display:flex;border:1.5px solid var(--ink);border-radius:0;overflow:hidden}
+.seg button{border:0;background:#fff;color:var(--ink);padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--acc);color:var(--accfg)}
+#stage{position:relative;flex:1;overflow:hidden;cursor:grab;touch-action:none;background:var(--stage)}
+#stage.grey{--stage:#8a90a0}
+#stage.check{background:conic-gradient(#d9dce4 25%,#fff 0 50%,#d9dce4 0 75%,#fff 0) 0 0/20px 20px}
+#view{position:absolute;left:0;top:0;transform-origin:0 0}
+#view>*{position:absolute;left:0;top:0;display:block}
+#src{image-rendering:pixelated}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--mute);text-align:center;pointer-events:none;padding:20px}
+.stats{padding:6px 12px;border-top:1px solid var(--line);color:var(--mute);font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
+aside{background:var(--panel);border:0;border-radius:0;padding:14px 18px;overflow:auto}
+fieldset{border:0;border-top:1px solid var(--line);margin:10px 0 0;padding:8px 0 0}
+legend{font-weight:600;padding-right:8px}
+.row{margin:8px 0}
+.row label{display:flex;justify-content:space-between;gap:8px}
+.row output{font-variant-numeric:tabular-nums;color:var(--acc);font-weight:600}
+.row small{display:block;color:var(--mute);font-size:11.5px;line-height:1.3}
+input[type=range]{width:100%;accent-color:var(--acc);margin:4px 0 0}
+select,input[type=text],input[type=color]{font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--ink);border-radius:0;padding:6px 8px;min-width:0}
+input[type=color]{padding:0;width:34px;height:30px}
+.btn{font:inherit;font-weight:600;border:1.5px solid var(--ink);background:#fff;color:var(--ink);border-radius:0;padding:8px 14px;cursor:pointer}
+.btn.p{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,.seg button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.flex{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.flex>select,.flex>input[type=text]{flex:1}
+</style></head><body>
+<div class="app">
+<section class="stagewrap">
+ <div class="bar">
+  <h1>Inkwell</h1>
+  <div class="seg" id="vm"><button data-v="vec" class="on">Vector</button><button data-v="src">Source</button><button data-v="ovl">Overlay</button></div>
+  <div class="seg" id="bgm"><button data-b="white" class="on">White</button><button data-b="grey">Grey</button><button data-b="check">Check</button></div>
+ </div>
+ <div id="stage" class="">
+  <div id="view">
+   <img id="src" alt="Source artwork">
+   <svg id="sv" xmlns="http://www.w3.org/2000/svg"><path id="pv" fill-rule="evenodd"/><path id="pn" fill="none" stroke="#ff2d6f" stroke-width="6" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+  </div>
+  <div class="empty" id="empty">Drop a PNG here (black on transparent works best)</div>
+ </div>
+ <div class="stats"><span id="s1">–</span><span id="s2"></span><span id="s3"></span><span style="margin-left:auto">Scroll to zoom · drag to pan · double-click to fit</span></div>
+</section>
+<aside>
+ <div class="flex"><input type="file" id="file" accept="image/*" hidden><button class="btn p" id="open">Open image</button><button class="btn" id="sample">Sample</button></div>
+ <div id="ctl"></div>
+ <fieldset><legend>Display</legend>
+  <div class="flex"><label>Fill <input type="color" id="fill" value="#000000"></label><label><input type="checkbox" id="nodes"> Show nodes</label></div>
+ </fieldset>
+ <fieldset><legend>Presets</legend>
+  <div class="flex"><select id="psel"></select><button class="btn" id="pdel" title="Delete saved preset">Delete</button></div>
+  <div class="flex" style="margin-top:6px"><input type="text" id="pname" placeholder="Preset name"><button class="btn" id="psave">Save</button></div>
+ </fieldset>
+ <fieldset><legend>Export</legend>
+  <div class="flex"><button class="btn p" id="dl">Download SVG</button><button class="btn" id="cp">Copy SVG</button></div>
+  <small id="msg" style="color:var(--mute)"></small>
+ </fieldset>
+</aside>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const V=(a,b)=>[a[0]-b[0],a[1]-b[1]],A=(a,b)=>[a[0]+b[0],a[1]+b[1]],M=(a,s)=>[a[0]*s,a[1]*s],D=(a,b)=>a[0]*b[0]+a[1]*b[1],L=a=>Math.hypot(a[0],a[1]);
+const N=a=>{const l=L(a);return l>1e-9?[a[0]/l,a[1]/l]:[1,0]};
+
+/* ---------- parameters ---------- */
+const DEFS=[
+ ['Source',[
+  ['mode','Read from','sel',['Alpha (transparent PNG)','Darkness (opaque image)'],0,'Alpha reads the transparency channel, so black-on-transparent layers trace cleanest.'],
+  ['up','Upscale',1,8,1,4,'×','Traces at higher resolution for sub-pixel accuracy. Biggest win for pixel art.'],
+  ['soft','Edge softening',0,3,.1,.6,'px','Blurs the field before tracing. More = smoother edges, fewer tiny wobbles.'],
+  ['thr','Threshold',.05,.95,.01,.5,'','Lower = bolder lines, higher = thinner lines.']]],
+ ['Shape',[
+  ['speck','Speckle filter',0,200,1,4,'px²','Drops islands and holes smaller than this area.'],
+  ['corner','Corner angle',15,150,1,60,'°','Turns sharper than this stay sharp. Lower = more corners kept.'],
+  ['smooth','Smoothing',0,10,1,2,'','Relaxes points between corners. High values can shave thin tips.'],
+  ['tol','Curve tolerance',.03,3,.01,.25,'px','Max distance from the traced edge. Lower = more nodes, more faithful.']]]];
+const P={};const BUILTIN={
+ 'Faithful ink':{mode:0,up:6,soft:.4,thr:.5,speck:2,corner:55,smooth:1,tol:.12},
+ 'Sharp corners':{mode:0,up:4,soft:.3,thr:.5,speck:3,corner:35,smooth:0,tol:.2},
+ 'Soft marker':{mode:0,up:4,soft:1.2,thr:.5,speck:6,corner:100,smooth:5,tol:.45}};
+let timer;
+const ctl=$('#ctl');
+DEFS.forEach(([name,items])=>{
+ const fs=document.createElement('fieldset');fs.innerHTML='<legend>'+name+'</legend>';
+ items.forEach(d=>{const [k,label]=d;const r=document.createElement('div');r.className='row';
+  if(d[2]==='sel'){r.innerHTML=`<label for="${k}">${label}</label><select id="${k}" style="width:100%">${d[3].map((o,i)=>`<option value="${i}">${o}</option>`).join('')}</select><small>${d[5]}</small>`;
+   P[k]=d[4];}
+  else{const [,,mn,mx,st,v,u,h]=d;P[k]=v;
+   r.innerHTML=`<label for="${k}">${label}<output id="o_${k}">${v}${u}</output></label><input type="range" id="${k}" min="${mn}" max="${mx}" step="${st}" value="${v}"><small>${h}</small>`;r.dataset.u=u;}
+  fs.appendChild(r);});
+ ctl.appendChild(fs);});
+function syncUI(){for(const k in P){const e=$('#'+k);e.value=P[k];const o=$('#o_'+k);if(o)o.textContent=P[k]+e.closest('.row').dataset.u;}}
+ctl.addEventListener('input',e=>{const k=e.target.id;P[k]=+e.target.value;const o=$('#o_'+k);if(o)o.textContent=P[k]+e.target.closest('.row').dataset.u;schedule();});
+function schedule(){clearTimeout(timer);timer=setTimeout(run,140);}
+
+/* ---------- presets ---------- */
+function userPresets(){try{return JSON.parse(localStorage.getItem('inkwell.presets')||'{}')}catch(e){return{}}}
+function refreshPresets(sel){const u=userPresets();const s=$('#psel');
+ s.innerHTML='<option value="">Presets…</option>'+Object.keys(BUILTIN).map(n=>`<option value="b:${n}">${n}</option>`).join('')+Object.keys(u).map(n=>`<option value="u:${n}">★ ${n}</option>`).join('');if(sel)s.value=sel;}
+$('#psel').onchange=e=>{const v=e.target.value;if(!v)return;const n=v.slice(2);Object.assign(P,v[0]==='b'?BUILTIN[n]:userPresets()[n]);syncUI();run();};
+$('#psave').onclick=()=>{const n=$('#pname').value.trim();if(!n)return;const u=userPresets();u[n]={...P};try{localStorage.setItem('inkwell.presets',JSON.stringify(u))}catch(e){msg('Could not save presets in this browser.');return}refreshPresets('u:'+n);msg('Saved preset “'+n+'”.');};
+$('#pdel').onclick=()=>{const v=$('#psel').value;if(v[0]!=='u')return;const u=userPresets();delete u[v.slice(2)];try{localStorage.setItem('inkwell.presets',JSON.stringify(u))}catch(e){}refreshPresets();};
+refreshPresets();
+function msg(t){$('#msg').textContent=t}
+
+/* ---------- field + marching squares ---------- */
+function boxBlur(F,W,H,r){if(r<1)return;const T=new Float32Array(F.length);
+ for(let pass=0;pass<2;pass++){
+  for(let y=0;y<H;y++){let s=0;const o=y*W;for(let x=-r;x<=r;x++)s+=F[o+Math.min(W-1,Math.max(0,x))];
+   for(let x=0;x<W;x++){T[o+x]=s/(2*r+1);s+=F[o+Math.min(W-1,x+r+1)]-F[o+Math.max(0,x-r)];}}
+  for(let x=0;x<W;x++){let s=0;for(let y=-r;y<=r;y++)s+=T[Math.min(H-1,Math.max(0,y))*W+x];
+   for(let y=0;y<H;y++){F[y*W+x]=s/(2*r+1);s+=T[Math.min(H-1,y+r+1)*W+x]-T[Math.max(0,y-r)*W+x];}}}}
+const SEG=[[],['L','B'],['B','R'],['L','R'],['T','R'],0,['T','B'],['T','L'],['T','L'],['T','B'],0,['T','R'],['L','R'],['B','R'],['L','B'],[]];
+function contours(F,W,H,t){
+ const pts=new Map(),adj=new Map();
+ const key=(e,x,y)=>e==='T'?[(y*W+x)*2,0]:e==='B'?[((y+1)*W+x)*2,0]:e==='L'?[(y*W+x)*2+1,1]:[(y*W+x+1)*2+1,1];
+ const pt=(e,x,y)=>{const [k,v]=key(e,x,y);if(!pts.has(k)){let a,b;
+   if(!v){const i=(e==='T'?y:y+1)*W+x;a=F[i];b=F[i+1];pts.set(k,[x+(t-a)/(b-a),e==='T'?y:y+1]);}
+   else{const xx=e==='L'?x:x+1,i=y*W+xx;a=F[i];b=F[i+W];pts.set(k,[xx,y+(t-a)/(b-a)]);}}return k;};
+ const link=(a,b)=>{(adj.get(a)||adj.set(a,[]).get(a)).push(b);(adj.get(b)||adj.set(b,[]).get(b)).push(a);};
+ for(let y=0;y<H-1;y++)for(let x=0;x<W-1;x++){const i=y*W+x;
+  const c=(F[i]>=t?8:0)|(F[i+1]>=t?4:0)|(F[i+W+1]>=t?2:0)|(F[i+W]>=t?1:0);if(c===0||c===15)continue;
+  let s=SEG[c];
+  if(!s){const hi=(F[i]+F[i+1]+F[i+W]+F[i+W+1])/4>=t;
+   s=c===5?(hi?[['T','L'],['B','R']]:[['T','R'],['L','B']]):(hi?[['T','R'],['L','B']]:[['T','L'],['B','R']]);
+   s.forEach(p=>link(pt(p[0],x,y),pt(p[1],x,y)));}
+  else link(pt(s[0],x,y),pt(s[1],x,y));}
+ const seen=new Set(),loops=[];
+ for(const k0 of adj.keys()){if(seen.has(k0))continue;const lp=[];let prev=-1,cur=k0;
+  while(true){seen.add(cur);lp.push(pts.get(cur));const n=adj.get(cur);const nx=n[0]!==prev?n[0]:n[1];
+   prev=cur;cur=nx;if(cur===k0||seen.has(cur))break;}
+  if(lp.length>=4)loops.push(lp);}
+ return loops;}
+
+/* ---------- Schneider curve fitting ---------- */
+function bz(c,t){let p=c;while(p.length>1){const q=[];for(let i=0;i<p.length-1;i++)q.push([p[i][0]*(1-t)+p[i+1][0]*t,p[i][1]*(1-t)+p[i+1][1]*t]);p=q}return p[0]}
+function chord(P_,f,l){const u=[0];for(let i=f+1;i<=l;i++)u.push(u[u.length-1]+L(V(P_[i],P_[i-1])));const T=u[u.length-1]||1;return u.map(v=>v/T);}
+function gen(Q,f,l,u,t1,t2){const p0=Q[f],p3=Q[l];let c00=0,c01=0,c11=0,x0=0,x1=0;
+ for(let i=0;i<u.length;i++){const t=u[i],m=1-t,b0=m*m*m,b1=3*t*m*m,b2=3*t*t*m,b3=t*t*t;
+  const a1=M(t1,b1),a2=M(t2,b2);c00+=D(a1,a1);c01+=D(a1,a2);c11+=D(a2,a2);
+  const tmp=V(Q[f+i],A(M(p0,b0+b1),M(p3,b2+b3)));x0+=D(a1,tmp);x1+=D(a2,tmp);}
+ const det=c00*c11-c01*c01;let aL,aR;const seg=L(V(p3,p0));
+ if(Math.abs(det)>1e-12){aL=(x0*c11-x1*c01)/det;aR=(c00*x1-c01*x0)/det;}
+ if(!(aL>1e-6*seg&&aR>1e-6*seg))aL=aR=seg/3;
+ return[p0,A(p0,M(t1,aL)),A(p3,M(t2,aR)),p3];}
+function maxErr(Q,f,l,c,u){let m=0,s=Math.floor((l-f+1)/2)+f;
+ for(let i=1;i<l-f;i++){const p=bz(c,u[i]),d=V(p,Q[f+i]),e=D(d,d);if(e>=m){m=e;s=f+i;}}return[m,s];}
+function reparam(Q,f,c,u){const q1=[0,1,2].map(i=>M(V(c[i+1],c[i]),3)),q2=[0,1].map(i=>M(V(q1[i+1],q1[i]),2));
+ return u.map((t,i)=>{const d=V(bz(c,t),Q[f+i]),d1=bz(q1,t),d2=bz(q2,t),den=D(d1,d1)+D(d,d2);
+  return Math.abs(den)<1e-12?t:Math.min(1,Math.max(0,t-D(d,d1)/den));});}
+function fit(Q,f,l,t1,t2,err,out){
+ if(l-f===1){const d=L(V(Q[l],Q[f]))/3;out.push([Q[f],A(Q[f],M(t1,d)),A(Q[l],M(t2,d)),Q[l]]);return;}
+ let u=chord(Q,f,l),c=gen(Q,f,l,u,t1,t2),[me,sp]=maxErr(Q,f,l,c,u);
+ if(me<err){out.push(c);return;}
+ if(me<err*16)for(let i=0;i<12;i++){u=reparam(Q,f,c,u);c=gen(Q,f,l,u,t1,t2);[me,sp]=maxErr(Q,f,l,c,u);if(me<err){out.push(c);return;}}
+ sp=Math.min(l-1,Math.max(f+1,sp));
+ const tc=N(V(Q[sp-1],Q[sp+1]));fit(Q,f,sp,t1,tc,err,out);fit(Q,sp,l,M(tc,-1),t2,err,out);}
+
+/* ---------- loop -> beziers ---------- */
+let SC=1;
+function fitLoop(p){
+ const n=p.length,kk=Math.max(2,Math.min(Math.round((P.soft+.7)*SC),n>>2)),ang=new Float32Array(n),cor=[];
+ for(let i=0;i<n;i++){const a=N(V(p[i],p[(i-kk+n)%n])),b=N(V(p[(i+kk)%n],p[i]));ang[i]=Math.acos(Math.min(1,Math.max(-1,D(a,b))))*57.2958;}
+ for(let i=0;i<n;i++){if(ang[i]<=P.corner)continue;let ok=true;
+  for(let j=-kk;j<=kk&&ok;j++){const a=ang[(i+j+n)%n];if(j!==0&&(a>ang[i]||(a===ang[i]&&j<0)))ok=false;}
+  if(ok)cor.push(i);}
+ const isC=new Uint8Array(n);cor.forEach(i=>isC[i]=1);let q=p;
+ for(let s=0;s<P.smooth*2;s++){const r=new Array(n);for(let i=0;i<n;i++){const a=q[(i-1+n)%n],b=q[(i+1)%n];
+  r[i]=isC[i]?q[i]:[q[i][0]*.5+(a[0]+b[0])*.25,q[i][1]*.5+(a[1]+b[1])*.25];}q=r;}
+ const err=Math.pow(P.tol*SC,2),out=[];
+ if(!cor.length){const arr=q.concat([q[0]]),tc=N(V(q[kk%n],q[(n-kk)%n]));fit(arr,0,arr.length-1,tc,M(tc,-1),err,out);}
+ else for(let j=0;j<cor.length;j++){const s=cor[j],e=cor[(j+1)%cor.length],arr=[];let i=s;
+  while(true){arr.push(q[i]);if(i===e&&arr.length>1)break;i=(i+1)%n;}
+  if(arr.length<2)continue;const m=Math.min(3,arr.length-1),z=arr.length-1;
+  fit(arr,0,z,N(V(arr[m],arr[0])),N(V(arr[z-m],arr[z])),err,out);}
+ return out;}
+
+/* ---------- pipeline ---------- */
+let img=null,svgText='';const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
+function run(){
+ if(!img)return;const t0=performance.now(),w=img.naturalWidth,h=img.naturalHeight;
+ SC=Math.max(1,Math.min(P.up,Math.floor(Math.sqrt(1.4e7/(w*h)))));
+ const uw=w*SC,uh=h*SC,W=uw+2,H=uh+2;cv.width=uw;cv.height=uh;
+ if(P.mode==1){cx.fillStyle='#fff';cx.fillRect(0,0,uw,uh);}else cx.clearRect(0,0,uw,uh);
+ cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality='high';cx.drawImage(img,0,0,uw,uh);
+ const d=cx.getImageData(0,0,uw,uh).data,F=new Float32Array(W*H);
+ for(let y=0;y<uh;y++)for(let x=0;x<uw;x++){const i=(y*uw+x)*4;
+  F[(y+1)*W+x+1]=P.mode==1?1-(.299*d[i]+.587*d[i+1]+.114*d[i+2])/255:d[i+3]/255;}
+ boxBlur(F,W,H,Math.round(P.soft*SC/1.7));
+ const minA=P.speck*SC*SC;let nodes=[],paths=[],nb=0;
+ for(const lp of contours(F,W,H,P.thr)){
+  let a=0;for(let i=0;i<lp.length;i++){const p=lp[i],q=lp[(i+1)%lp.length];a+=p[0]*q[1]-q[0]*p[1];}
+  if(Math.abs(a)/2<minA)continue;
+  const bs=fitLoop(lp);if(!bs.length)continue;
+  const f=p=>((p[0]-.5)/SC).toFixed(2)+' '+((p[1]-.5)/SC).toFixed(2);
+  paths.push('M'+f(bs[0][0])+bs.map(c=>'C'+f(c[1])+' '+f(c[2])+' '+f(c[3])).join('')+'Z');
+  nodes.push(bs[0][0]);bs.forEach(c=>nodes.push(c[3]));nb+=bs.length;}
+ const dstr=paths.join('');
+ svgText=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><path fill-rule="evenodd" fill="${$('#fill').value}" d="${dstr}"/></svg>`;
+ $('#pv').setAttribute('d',dstr);$('#pv').setAttribute('fill',$('#fill').value);$('#pn').setAttribute('d',dstr);
+ $('#pn').dataset.nodes=nodes.slice(0,6000).map(p=>'M'+((p[0]-.5)/SC).toFixed(2)+' '+((p[1]-.5)/SC).toFixed(2)+'h.001').join('');
+ applyView();
+ $('#s1').textContent=`${w}×${h}px · traced at ${SC}×`;$('#s2').textContent=`${paths.length} paths · ${nodes.length} nodes`;
+ $('#s3').textContent=`${(svgText.length/1024).toFixed(1)} KB · ${Math.round(performance.now()-t0)} ms`;}
+
+/* ---------- view ---------- */
+let mode='vec',z=1,tx=0,ty=0;
+function applyView(){const o=mode==='ovl',pv=$('#pv'),pn=$('#pn');
+ $('#src').style.display=mode==='vec'?'none':'block';
+ pv.style.display=mode==='src'?'none':'';
+ if(o){pv.setAttribute('fill','none');pv.setAttribute('stroke','#ff2d6f');pv.setAttribute('stroke-width','1.5');pv.setAttribute('vector-effect','non-scaling-stroke');}
+ else{pv.setAttribute('fill',$('#fill').value);pv.removeAttribute('stroke');pv.removeAttribute('vector-effect');}
+ pn.setAttribute('d',$('#nodes').checked?(pn.dataset.nodes||''):'');}
+function place(){$('#view').style.transform=`translate(${tx}px,${ty}px) scale(${z})`;}
+function fitView(){if(!img)return;const s=$('#stage'),w=img.naturalWidth,h=img.naturalHeight;
+ z=Math.min(s.clientWidth/w,s.clientHeight/h)*.94;tx=(s.clientWidth-w*z)/2;ty=(s.clientHeight-h*z)/2;place();}
+function load(url){const i=new Image();i.onload=()=>{img=i;const w=i.naturalWidth,h=i.naturalHeight;
+  $('#src').src=url;for(const e of [$('#src'),$('#sv')]){e.setAttribute('width',w);e.setAttribute('height',h);}
+  $('#sv').setAttribute('viewBox',`0 0 ${w} ${h}`);$('#empty').style.display='none';fitView();run();};i.src=url;}
+$('#vm').onclick=e=>{const v=e.target.dataset.v;if(!v)return;mode=v;[...$('#vm').children].forEach(b=>b.classList.toggle('on',b===e.target));applyView();};
+$('#bgm').onclick=e=>{const v=e.target.dataset.b;if(!v)return;[...$('#bgm').children].forEach(b=>b.classList.toggle('on',b===e.target));$('#stage').className=v==='white'?'':v;};
+$('#fill').oninput=()=>run();$('#nodes').onchange=applyView;
+const st=$('#stage');
+st.addEventListener('wheel',e=>{e.preventDefault();const r=st.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,k=Math.exp(-e.deltaY*.0015);
+ tx=mx-(mx-tx)*k;ty=my-(my-ty)*k;z*=k;place();},{passive:false});
+let drag=null;st.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY,tx,ty];st.setPointerCapture(e.pointerId);st.style.cursor='grabbing';});
+st.addEventListener('pointermove',e=>{if(!drag)return;tx=drag[2]+e.clientX-drag[0];ty=drag[3]+e.clientY-drag[1];place();});
+st.addEventListener('pointerup',()=>{drag=null;st.style.cursor='';});st.addEventListener('dblclick',fitView);
+addEventListener('resize',fitView);
+
+/* ---------- input / output ---------- */
+$('#open').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{const f=e.target.files[0];if(f)load(URL.createObjectURL(f));};
+st.addEventListener('dragover',e=>e.preventDefault());
+st.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)load(URL.createObjectURL(f));});
+$('#sample').onclick=()=>{const c=document.createElement('canvas');c.width=c.height=96;const g=c.getContext('2d');
+ g.lineWidth=2.4;g.lineCap='round';g.lineJoin='round';g.strokeStyle='#000';
+ g.beginPath();g.arc(48,50,30,0,7);g.stroke();
+ g.beginPath();g.arc(37,44,3.2,0,7);g.arc(59,44,3.2,0,7);g.fill();
+ g.beginPath();g.moveTo(33,60);g.quadraticCurveTo(48,76,63,60);g.stroke();
+ g.beginPath();g.moveTo(20,32);g.lineTo(30,10);g.lineTo(42,22);g.lineTo(54,8);g.lineTo(62,24);g.lineTo(78,18);g.lineTo(76,36);g.stroke();
+ g.lineWidth=1;g.beginPath();g.moveTo(40,52);g.lineTo(36,56);g.moveTo(56,52);g.lineTo(60,56);g.stroke();
+ c.toBlob(b=>load(URL.createObjectURL(b)));};
+$('#dl').onclick=()=>{if(!svgText)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([svgText],{type:'image/svg+xml'}));a.download='vectorized.svg';document.body.appendChild(a);a.click();a.remove();msg('Saved.');};
+$('#cp').onclick=async()=>{if(!svgText)return;try{await navigator.clipboard.writeText(svgText);msg('SVG copied.');}
+ catch(e){const t=document.createElement('textarea');t.value=svgText;document.body.appendChild(t);t.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}t.remove();msg(ok?'SVG copied.':'Copy blocked. Use Download SVG.');}};
+syncUI();$('#sample').click();
+</script></body></html>
